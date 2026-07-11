@@ -1,0 +1,97 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Scan for secrets
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Build mod zip
+        run: python build_mod.py
+
+      - name: Verify zip
+        run: |
+          python - <<'PY'
+          import json
+          import zipfile
+          from pathlib import Path
+
+          info = json.loads(Path("info.json").read_text(encoding="utf-8"))
+          archive_path = Path("target") / f"personal-cargo-landing-pad_{info['version']}.zip"
+          with zipfile.ZipFile(archive_path) as archive:
+              bad_file = archive.testzip()
+              if bad_file:
+                  raise SystemExit(f"Corrupt zip member: {bad_file}")
+              expected = f"personal-cargo-landing-pad_{info['version']}/info.json"
+              if expected not in archive.namelist():
+                  raise SystemExit(f"Missing {expected}")
+          print(f"Verified {archive_path}")
+          PY
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: personal-cargo-landing-pad
+          path: target/personal-cargo-landing-pad_*.zip
+          if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Verify tag matches mod version
+        env:
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          version = json.loads(Path("info.json").read_text(encoding="utf-8"))["version"]
+          expected_tag = f"v{version}"
+          if os.environ["TAG_NAME"] != expected_tag:
+              raise SystemExit(
+                  f"Tag {os.environ['TAG_NAME']} does not match info.json version {version}; "
+                  f"expected {expected_tag}"
+              )
+          PY
+
+      - name: Build mod zip
+        run: python build_mod.py
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "${{ github.ref_name }}" target/personal-cargo-landing-pad_*.zip --generate-notes

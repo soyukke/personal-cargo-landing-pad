@@ -3,6 +3,7 @@ local PAD_FRAME = MOD_PREFIX .. "-pad-frame"
 local PLATFORM_FRAME = MOD_PREFIX .. "-platform-frame"
 local CLAIM_PAD_BUTTON = MOD_PREFIX .. "-claim-pad"
 local CLAIM_PLATFORM_BUTTON = MOD_PREFIX .. "-claim-platform"
+local routing = require("routing")
 
 local function ensure_storage()
   storage.personal_cargo_landing_pad = storage.personal_cargo_landing_pad or {}
@@ -221,26 +222,32 @@ local function route_cargo_pod(cargo_pod)
   if not platform or not platform.valid then
     return
   end
-  local owner = state().platform_owners[platform.index]
-  if not owner then
-    return
-  end
-
   local destination = cargo_pod.cargo_pod_destination
   local surface = target_surface(destination)
   if not surface then
     return
   end
+  local pad, owner = routing.choose_pad(
+    state().platform_owners,
+    state().pads,
+    platform.index,
+    surface.index,
+    origin.force
+  )
+  if not pad then
+    return
+  end
+  -- Clean stale records through the normal storage path before routing.
   local record = valid_pad_record(owner, surface.index)
-  if not record or record.entity.force ~= origin.force then
+  if not record or record.entity ~= pad then
     return
   end
 
-  cargo_pod.cargo_pod_destination = {
-    type = defines.cargo_destination.station,
-    station = record.entity,
-    transform_launch_products = destination.transform_launch_products or false
-  }
+  cargo_pod.cargo_pod_destination = routing.station_destination(
+    pad,
+    destination,
+    defines.cargo_destination.station
+  )
 end
 
 local function claim_opened_pad(player)

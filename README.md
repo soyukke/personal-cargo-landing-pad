@@ -46,3 +46,8 @@ The Mod Portal zip is written to `target/`.
 ```powershell
 just precommit
 ```
+
+`tests/routing-test` is a Factorio-native unit-test mod. It verifies owner and
+surface matching, force isolation, invalid-pad fallback, and destination
+construction using Factorio's own Lua runtime. It is not included in the
+release zip.

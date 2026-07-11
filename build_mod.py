@@ -18,6 +18,7 @@ INCLUDED_PATHS = [
     "locale/ja/locale.cfg",
     "MOD_PORTAL_DESCRIPTION.md",
     "README.md",
+    "routing.lua",
     "thumbnail.png",
 ]
 
