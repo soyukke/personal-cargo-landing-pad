@@ -1,0 +1,9 @@
+---------------------------------------------------------------------------------------------------
+Version: 0.1.0
+Date: 2026-07-12
+  Features:
+    - Allow each player to own one cargo landing pad per surface.
+    - Allow players to claim space platforms from the hub GUI.
+    - Route descending cargo from claimed platforms to the owner's pad.
+    - Fall back to vanilla routing when no matching personal pad exists.
+

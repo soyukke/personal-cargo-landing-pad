@@ -1,0 +1,13 @@
+{
+  "name": "personal-cargo-landing-pad",
+  "version": "0.1.0",
+  "title": "Personal Cargo Landing Pad",
+  "author": "soyukke",
+  "factorio_version": "2.0",
+  "dependencies": [
+    "base >= 2.0",
+    "space-age >= 2.0",
+    "a_lot_of_cargo_pads = 1.0.0"
+  ],
+  "description": "Routes cargo dropped from a claimed space platform to its owner's personal landing pad, with one pad per player per surface."
+}

@@ -1,0 +1,5 @@
+target/
+*.zip
+.venv/
+__pycache__/
+
