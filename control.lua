@@ -227,6 +227,15 @@ local function route_cargo_pod(cargo_pod)
   if not surface then
     return
   end
+  -- A station destination means a landing pad explicitly requested this cargo.
+  -- Keep that destination intact so another platform owner's pad cannot steal it.
+  if routing.requested_pad_owner(
+    state().pad_owners,
+    destination,
+    defines.cargo_destination.station
+  ) then
+    return
+  end
   local pad, owner = routing.choose_pad(
     state().platform_owners,
     state().pads,

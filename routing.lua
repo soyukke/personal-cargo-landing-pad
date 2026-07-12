@@ -1,5 +1,16 @@
 local routing = {}
 
+function routing.requested_pad_owner(pad_owners, destination, station_destination_type)
+  if not destination or destination.type ~= station_destination_type then
+    return nil
+  end
+  local station = destination.station
+  if not station or not station.valid or station.type ~= "cargo-landing-pad" or not station.unit_number then
+    return nil
+  end
+  return pad_owners[station.unit_number]
+end
+
 function routing.choose_pad(platform_owners, pads, platform_index, surface_index, origin_force)
   local owner = platform_owners[platform_index]
   if not owner then

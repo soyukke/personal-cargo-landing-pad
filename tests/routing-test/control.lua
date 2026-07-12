@@ -9,8 +9,8 @@ end
 script.on_init(function()
   local player_force = {name = "player"}
   local enemy_force = {name = "enemy"}
-  local alice_pad = {valid = true, force = player_force, unit_number = 101}
-  local bob_pad = {valid = true, force = player_force, unit_number = 102}
+  local alice_pad = {valid = true, force = player_force, type = "cargo-landing-pad", unit_number = 101}
+  local bob_pad = {valid = true, force = player_force, type = "cargo-landing-pad", unit_number = 102}
   local invalid_pad = {valid = false, force = player_force, unit_number = 103}
   local platform_owners = {[11] = 1, [22] = 2, [33] = 3}
   local pads = {
@@ -29,6 +29,28 @@ script.on_init(function()
   assert_equal(routing.choose_pad(platform_owners, pads, 11, 6, player_force), nil, "Missing surface pad falls back")
   assert_equal(routing.choose_pad(platform_owners, pads, 11, 5, enemy_force), nil, "Wrong force pad is rejected")
   assert_equal(routing.choose_pad(platform_owners, pads, 33, 5, player_force), nil, "Invalid pad is rejected")
+
+  local pad_owners = {[101] = 1, [102] = 2}
+  assert_equal(
+    routing.requested_pad_owner(pad_owners, {type = 7, station = alice_pad}, 7),
+    1,
+    "An explicit request remains assigned to Alice's pad"
+  )
+  assert_equal(
+    routing.requested_pad_owner(pad_owners, {type = 7, station = bob_pad}, 7),
+    2,
+    "An explicit request remains assigned to Bob's pad"
+  )
+  assert_equal(
+    routing.requested_pad_owner(pad_owners, {type = 8, station = alice_pad}, 7),
+    nil,
+    "A surface destination can still be routed by platform owner"
+  )
+  assert_equal(
+    routing.requested_pad_owner(pad_owners, {type = 7, station = {valid = true, type = "space-platform-hub"}}, 7),
+    nil,
+    "A platform hub is not treated as a landing pad request"
+  )
 
   local destination = routing.station_destination(alice_pad, {transform_launch_products = true}, 7)
   assert_equal(destination.type, 7, "Station destination type is preserved")
