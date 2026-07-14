@@ -68,6 +68,35 @@ script.on_init(function()
     nil,
     "A platform hub is not treated as a landing pad request"
   )
+  assert_equal(
+    routing.matches_requested_item({["space-platform-foundation"] = true}, {["space-platform-foundation"] = true}),
+    true,
+    "An automatically requested item is recognized"
+  )
+  assert_equal(
+    routing.matches_requested_item({wood = true}, {["space-platform-foundation"] = true}),
+    false,
+    "A manual trash drop is not mistaken for a landing pad request"
+  )
+
+  -- Regression: Factorio may initially select Bob's pad for Alice's player pod.
+  -- The rider must take priority over both that station and the platform owner.
+  local route_owner, preserve = routing.route_owner(1, 2, 1)
+  assert_equal(route_owner, 1, "Alice riding the pod routes to Alice's pad")
+  assert_equal(preserve, false, "Bob's preselected pad is overridden for Alice")
+  assert_equal(
+    routing.choose_pad_for_owner(pads, route_owner, 5, player_force),
+    alice_pad,
+    "Alice lands at Alice's owned pad"
+  )
+
+  route_owner, preserve = routing.route_owner(nil, 2, 1)
+  assert_equal(route_owner, 2, "A cargo request remains owned by Bob's pad")
+  assert_equal(preserve, true, "An explicit cargo request keeps its destination")
+
+  route_owner, preserve = routing.route_owner(nil, nil, 1)
+  assert_equal(route_owner, 1, "An unaddressed cargo drop uses the platform owner")
+  assert_equal(preserve, false, "An unaddressed cargo drop is routed")
 
   local destination = routing.station_destination(alice_pad, {transform_launch_products = true}, 7)
   assert_equal(destination.type, 7, "Station destination type is preserved")

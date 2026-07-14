@@ -30,8 +30,26 @@ function routing.requested_pad_owner(pad_owners, destination, station_destinatio
   return pad_owners[station.unit_number]
 end
 
-function routing.choose_pad(platform_owners, pads, platform_index, surface_index, origin_force)
-  local owner = platform_owners[platform_index]
+function routing.matches_requested_item(cargo_item_names, requested_item_names)
+  for item_name in pairs(cargo_item_names) do
+    if requested_item_names[item_name] then
+      return true
+    end
+  end
+  return false
+end
+
+function routing.route_owner(rider_owner, requested_owner, platform_owner)
+  if rider_owner then
+    return rider_owner, false
+  end
+  if requested_owner then
+    return requested_owner, true
+  end
+  return platform_owner, false
+end
+
+function routing.choose_pad_for_owner(pads, owner, surface_index, origin_force)
   if not owner then
     return nil
   end
@@ -39,6 +57,15 @@ function routing.choose_pad(platform_owners, pads, platform_index, surface_index
   local record = owner_pads and owner_pads[surface_index] or nil
   local entity = record and record.entity or nil
   if not entity or not entity.valid or entity.force ~= origin_force then
+    return nil
+  end
+  return entity
+end
+
+function routing.choose_pad(platform_owners, pads, platform_index, surface_index, origin_force)
+  local owner = platform_owners[platform_index]
+  local entity = routing.choose_pad_for_owner(pads, owner, surface_index, origin_force)
+  if not entity then
     return nil
   end
   return entity, owner

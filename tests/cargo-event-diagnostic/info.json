@@ -1,0 +1,8 @@
+{
+  "name": "personal-cargo-landing-pad-cargo-event-diagnostic",
+  "version": "0.1.0",
+  "title": "Personal Cargo Landing Pad Cargo Event Diagnostic",
+  "author": "soyukke",
+  "factorio_version": "2.0",
+  "dependencies": ["space-age >= 2.0"]
+}

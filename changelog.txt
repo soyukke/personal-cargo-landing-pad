@@ -1,4 +1,13 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.1.3
+Date: 2026-07-15
+  Bugfixes:
+    - Route a player riding a cargo pod to that player's owned landing pad, even when Factorio
+      initially selected another player's pad.
+    - Route manually dropped items to the platform owner's pad unless the selected pad actually
+      requests an item in that cargo pod.
+
+---------------------------------------------------------------------------------------------------
 Version: 0.1.2
 Date: 2026-07-14
   Bugfixes:

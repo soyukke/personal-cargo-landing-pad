@@ -1,8 +1,8 @@
 {
   "name": "personal-cargo-landing-pad-routing-test",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "title": "Personal Cargo Landing Pad Routing Test",
   "author": "soyukke",
   "factorio_version": "2.0",
-  "dependencies": ["personal-cargo-landing-pad = 0.1.2"]
+  "dependencies": ["personal-cargo-landing-pad = 0.1.3"]
 }

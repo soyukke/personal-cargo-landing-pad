@@ -196,7 +196,50 @@ local function show_platform_frame(player, platform)
   frame.add({type = "button", name = CLAIM_PLATFORM_BUTTON, caption = {"personal-cargo-landing-pad.claim-platform"}})
 end
 
-local function route_cargo_pod(cargo_pod)
+local function cargo_item_names(cargo_pod)
+  local names = {}
+  local inventory = cargo_pod.get_inventory(defines.inventory.cargo_unit)
+  if not inventory then
+    return names
+  end
+  for index = 1, #inventory do
+    local stack = inventory[index]
+    if stack.valid_for_read then
+      names[stack.name] = true
+    end
+  end
+  return names
+end
+
+local function requested_item_names(station)
+  local names = {}
+  if not station or not station.valid or station.type ~= "cargo-landing-pad" then
+    return names
+  end
+  local sections = station.get_logistic_sections()
+  if not sections then
+    return names
+  end
+  for _, section in pairs(sections.sections) do
+    if section.active then
+      for slot = 1, section.filters_count do
+        local filter = section.get_slot(slot)
+        local value = filter.value
+        if value and value.type == "item" and (filter.min or 0) > 0 then
+          names[value.name] = true
+        end
+      end
+    end
+  end
+  return names
+end
+
+local function destination_requests_cargo(destination, cargo_pod)
+  local station = destination and destination.station
+  return routing.matches_requested_item(cargo_item_names(cargo_pod), requested_item_names(station))
+end
+
+local function route_cargo_pod(cargo_pod, rider_owner)
   if not cargo_pod or not cargo_pod.valid then
     return
   end
@@ -218,19 +261,27 @@ local function route_cargo_pod(cargo_pod)
   if not surface then
     return
   end
-  -- A station destination means a landing pad explicitly requested this cargo.
-  -- Keep that destination intact so another platform owner's pad cannot steal it.
-  if routing.requested_pad_owner(
+  local requested_owner = routing.requested_pad_owner(
     state().pad_owners,
     destination,
     defines.cargo_destination.station
-  ) then
+  )
+  if requested_owner and not destination_requests_cargo(destination, cargo_pod) then
+    requested_owner = nil
+  end
+  local owner, preserve_destination = routing.route_owner(
+    rider_owner,
+    requested_owner,
+    state().platform_owners[platform.index]
+  )
+  -- Cargo explicitly requested by a pad keeps that destination. A player riding
+  -- the pod takes priority because Factorio may preselect another player's pad.
+  if preserve_destination then
     return
   end
-  local pad, owner = routing.choose_pad(
-    state().platform_owners,
+  local pad = routing.choose_pad_for_owner(
     state().pads,
-    platform.index,
+    owner,
     surface.index,
     origin.force
   )
@@ -309,7 +360,7 @@ script.on_event(defines.events.on_entity_died, function(event)
 end)
 
 script.on_event(defines.events.on_cargo_pod_started_ascending, function(event)
-  route_cargo_pod(event.cargo_pod)
+  route_cargo_pod(event.cargo_pod, event.player_index)
 end)
 
 script.on_event(defines.events.on_gui_opened, function(event)
