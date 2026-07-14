@@ -1,5 +1,24 @@
 local routing = {}
 
+function routing.target_surface(destination, station_destination_type, surface_destination_type, get_surface)
+  if not destination then
+    return nil
+  end
+  if destination.type == station_destination_type then
+    local station = destination.station
+    return station and station.valid and station.surface or nil
+  end
+  if destination.type ~= surface_destination_type or not destination.surface then
+    return nil
+  end
+  local destination_surface = destination.surface
+  if type(destination_surface) == "string" or type(destination_surface) == "number" then
+    return get_surface(destination_surface)
+  end
+  -- Factorio 2.0 can provide LuaSurface directly for a surface destination.
+  return destination_surface
+end
+
 function routing.requested_pad_owner(pad_owners, destination, station_destination_type)
   if not destination or destination.type ~= station_destination_type then
     return nil

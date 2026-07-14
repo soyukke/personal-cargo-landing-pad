@@ -196,20 +196,6 @@ local function show_platform_frame(player, platform)
   frame.add({type = "button", name = CLAIM_PLATFORM_BUTTON, caption = {"personal-cargo-landing-pad.claim-platform"}})
 end
 
-local function target_surface(destination)
-  if not destination then
-    return nil
-  end
-  if destination.type == defines.cargo_destination.station then
-    local station = destination.station
-    return station and station.valid and station.surface or nil
-  end
-  if destination.type == defines.cargo_destination.surface and destination.surface then
-    return game.get_surface(destination.surface)
-  end
-  return nil
-end
-
 local function route_cargo_pod(cargo_pod)
   if not cargo_pod or not cargo_pod.valid then
     return
@@ -223,7 +209,12 @@ local function route_cargo_pod(cargo_pod)
     return
   end
   local destination = cargo_pod.cargo_pod_destination
-  local surface = target_surface(destination)
+  local surface = routing.target_surface(
+    destination,
+    defines.cargo_destination.station,
+    defines.cargo_destination.surface,
+    function(surface_identifier) return game.get_surface(surface_identifier) end
+  )
   if not surface then
     return
   end

@@ -19,6 +19,23 @@ script.on_init(function()
     [3] = {[5] = {entity = invalid_pad}}
   }
 
+  local vulcanus = {valid = true, index = 5, name = "vulcanus"}
+  local resolved = routing.target_surface({type = 8, surface = vulcanus}, 7, 8, function()
+    error("LuaSurface must not be passed to game.get_surface")
+  end)
+  assert_equal(resolved, vulcanus, "A LuaSurface destination is used directly")
+
+  resolved = routing.target_surface({type = 8, surface = "vulcanus"}, 7, 8, function(identifier)
+    assert_equal(identifier, "vulcanus", "Surface name is passed to the resolver")
+    return vulcanus
+  end)
+  assert_equal(resolved, vulcanus, "A named surface destination is resolved")
+
+  resolved = routing.target_surface({type = 7, station = {valid = true, surface = vulcanus}}, 7, 8, function()
+    error("A station surface must not be passed to game.get_surface")
+  end)
+  assert_equal(resolved, vulcanus, "A station destination uses its station surface")
+
   local selected, owner = routing.choose_pad(platform_owners, pads, 11, 5, player_force)
   assert_equal(selected, alice_pad, "Alice platform routes to Alice pad")
   assert_equal(owner, 1, "Alice remains the route owner")
