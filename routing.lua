@@ -43,10 +43,13 @@ function routing.route_owner(rider_owner, requested_owner, platform_owner)
   if rider_owner then
     return rider_owner, false
   end
+  if platform_owner then
+    return platform_owner, false
+  end
   if requested_owner then
     return requested_owner, true
   end
-  return platform_owner, false
+  return nil, false
 end
 
 function routing.choose_pad_for_owner(pads, owner, surface_index, origin_force)

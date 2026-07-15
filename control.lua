@@ -274,8 +274,8 @@ local function route_cargo_pod(cargo_pod, rider_owner)
     requested_owner,
     state().platform_owners[platform.index]
   )
-  -- Cargo explicitly requested by a pad keeps that destination. A player riding
-  -- the pod takes priority because Factorio may preselect another player's pad.
+  -- A rider takes first priority, then the source platform owner. Only cargo
+  -- from an unclaimed platform preserves Factorio's explicit request target.
   if preserve_destination then
     return
   end

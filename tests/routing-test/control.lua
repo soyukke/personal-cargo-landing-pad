@@ -91,8 +91,16 @@ script.on_init(function()
   )
 
   route_owner, preserve = routing.route_owner(nil, 2, 1)
-  assert_equal(route_owner, 2, "A cargo request remains owned by Bob's pad")
-  assert_equal(preserve, true, "An explicit cargo request keeps its destination")
+  assert_equal(route_owner, 1, "Alice's platform keeps cargo away from Bob's requesting pad")
+  assert_equal(preserve, false, "A claimed platform overrides another player's request")
+
+  route_owner, preserve = routing.route_owner(nil, 1, 2)
+  assert_equal(route_owner, 2, "Cetusk's platform keeps cargo away from Soyukke's requesting pad")
+  assert_equal(preserve, false, "Soyukke cannot take cargo from Cetusk's platform")
+
+  route_owner, preserve = routing.route_owner(nil, 2, nil)
+  assert_equal(route_owner, 2, "An unclaimed platform can still fulfill Bob's request")
+  assert_equal(preserve, true, "An unclaimed platform preserves an explicit request")
 
   route_owner, preserve = routing.route_owner(nil, nil, 1)
   assert_equal(route_owner, 1, "An unaddressed cargo drop uses the platform owner")

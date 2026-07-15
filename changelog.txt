@@ -1,4 +1,10 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.1.4
+Date: 2026-07-15
+  Bugfixes:
+    - Prioritize the source platform owner over another player's matching landing-pad request.
+
+---------------------------------------------------------------------------------------------------
 Version: 0.1.3
 Date: 2026-07-15
   Bugfixes:

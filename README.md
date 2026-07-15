@@ -7,9 +7,10 @@ platform to its owner's personal cargo landing pad.
 
 - each player may own one cargo landing pad per surface
 - each space platform may have one player owner
-- cargo explicitly requested by a claimed landing pad stays assigned to that pad
-- manually dropped cargo from a claimed platform is redirected to that player's
-  pad on the destination surface
+- cargo from a claimed platform is redirected to that platform owner's pad,
+  even when another player's pad requests the same item
+- an explicit landing-pad request is preserved only when the source platform is
+  unclaimed
 - vanilla routing remains unchanged when the platform or destination pad is
   unclaimed
 - admins may transfer ownership by claiming an object owned by another player
